@@ -29,9 +29,14 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void loadGallery (View view){
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        Log.d(TAG,"String intent"+ galleryIntent.getData().toString());
-        startActivityForResult(galleryIntent, Result_load_img);
+       // Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+       // Log.d(TAG, "String intent" + galleryIntent.getData().toString());
+       // startActivityForResult(galleryIntent, Result_load_img);
+
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), Result_load_img);
     }
 
     @Override
@@ -40,23 +45,25 @@ public class MainActivity extends ActionBarActivity {
         try {
             if (requestCode == Result_load_img && resultCode == RESULT_OK && data != null) {
 
-                Uri selectedImg = data.getData();
-                String[] filepathcolumn = {MediaStore.Images.Media.DATA};
-                Log.d("MAINACTIVITY _ ", selectedImg.toString());
-                for (int i = 0; i < filepathcolumn.length; i++) {
-                    Log.d("MAINACTIVITY///", "file path " + i + "  =" + filepathcolumn[i]);
-                }
-                Cursor cursor = getContentResolver().query(selectedImg, filepathcolumn, null, null, null);
+            //    Uri selectedImg = data.getData();
+          //      String[] filepathcolumn = {MediaStore.Images.Media.DATA};
+//                Cursor cursor = getContentResolver().query(selectedImg, filepathcolumn, null, null, null);
 
-                cursor.moveToFirst();
+              //  cursor.moveToFirst();
 
-                int columnIndex = cursor.getColumnIndex(filepathcolumn[0]);
-                Log.d("Mainactivity", "ColumnIndex" + columnIndex);
-                imgDecodableString = cursor.getString(columnIndex);
-                Log.d("Mainactivity", "imgDecodableString" + imgDecodableString);
-                cursor.close();
+               // int columnIndex = cursor.getColumnIndex(filepathcolumn[0]);
+
+               // imgDecodableString = cursor.getString(columnIndex);
+
+               // cursor.close();
                 ImageView imageView = (ImageView) findViewById(R.id.imgView);
-                imageView.setImageBitmap(BitmapFactory.decodeFile(imgDecodableString));
+              //  imageView.setImageBitmap(BitmapFactory.decodeFile(imgDecodableString));
+
+
+                        Uri uri = data.getData();
+                imageView.setImageURI(uri);
+
+
             } else {
                 Toast.makeText(this, "You haven't picked any image", Toast.LENGTH_LONG).show();
             }
