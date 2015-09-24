@@ -35,6 +35,7 @@ public class MainActivity extends ActionBarActivity {
 
         Intent intent = new Intent();
         intent.setType("image/*");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), Result_load_img);
     }
@@ -44,7 +45,7 @@ public class MainActivity extends ActionBarActivity {
         super.onActivityResult(requestCode, resultCode, data);
         try {
             if (requestCode == Result_load_img && resultCode == RESULT_OK && data != null) {
-
+                Log.d("Mainaaaa", data.toString());
             //    Uri selectedImg = data.getData();
           //      String[] filepathcolumn = {MediaStore.Images.Media.DATA};
 //                Cursor cursor = getContentResolver().query(selectedImg, filepathcolumn, null, null, null);
