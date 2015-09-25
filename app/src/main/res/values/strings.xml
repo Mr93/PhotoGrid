@@ -4,5 +4,8 @@
     <string name="app_name">Photo Grid</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="pls_wait_txt">Pls wait</string>
+    <string name="photogallery_txt">Multiple Images</string>
+    <string name="moreinfo_txt">moreinfo_txt</string>
 
 </resources>

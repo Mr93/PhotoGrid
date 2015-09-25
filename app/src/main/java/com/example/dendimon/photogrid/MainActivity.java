@@ -1,8 +1,10 @@
 package com.example.dendimon.photogrid;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -16,11 +18,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.nio.channels.ScatteringByteChannel;
@@ -28,40 +34,74 @@ import java.nio.channels.ScatteringByteChannel;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static Uri[] mUrls = null;
+    private static String[] strUrls=null;
+    private String[] mNames = null;
+    private Boolean[] mSlect = null;
+    private GridView gridView = null;
+    private Cursor cc = null;
 
-    protected Cursor mCursor;
-    protected int columnIndex;
-    protected GridView mGridView;
-    protected ImageAdapter mAdapter;
+    private ProgressDialog myProgressDialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //get all the images on phone
-        String[] projection = {
-                MediaStore.Images.Thumbnails._ID,
-                MediaStore.Images.Thumbnails.IMAGE_ID
+        //It have to be matched with the directory in SDCard
+        cc = this.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
 
-        };
+        //file[] files = f.listfiles();
 
-        //MediaStore.getMediaScannerUri()
-       // Log.d("Path", MediaStore.Images.Thumbnails.);
-        mCursor = getContentResolver().query(MediaStore.getMediaScannerUri(), projection, null, null, MediaStore.Images.Thumbnails.IMAGE_ID + " DESC");
+        if (cc != null) {
+            myProgressDialog = new ProgressDialog(MainActivity.this);
+            myProgressDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            myProgressDialog.setMessage(getResources().getString(R.string.pls_wait_txt));
+            myProgressDialog.show();
 
-        columnIndex = mCursor.getColumnIndexOrThrow(projection[0]);
+            new Thread() {
+                public void run() {
+                    try {
+                        cc.moveToFirst();
+                        mUrls = new Uri[cc.getCount()];
+                        strUrls = new String[cc.getCount()];
+                        mNames = new String[cc.getCount()];
+                        mSlect = new Boolean[cc.getCount()];
+                        for (int i = 0; i < cc.getCount(); i++) {
+                            cc.moveToPosition(i);
+                            mUrls[i] = Uri.parse(cc.getString(1));
+                            strUrls[i] = cc.getString(1);
+                            mNames[i] = cc.getString(3);
+                            mSlect[i] = false;
+                            Log.d("Select", mSlect.toString());
+                        }
+                    } catch (Exception e) {
 
-        //Get the gridview layout
-        mGridView = (GridView)findViewById(R.id.gridView);
-        mAdapter = new ImageAdapter(this);
-        mGridView.setAdapter(mAdapter);
-        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-            @Override
-            public void onItemClick(AdapterView<?> parent,View view,int position,long id){
-                Toast.makeText(MainActivity.this,"Selected Position: "+position,Toast.LENGTH_SHORT).show();
+                    }
+                    myProgressDialog.dismiss();
+                }
+            }.start();
+
+            gridView = (GridView) findViewById(R.id.gridView);
+            gridView.setAdapter(new ImageAdapter1(this));
+
+        }
+
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View v,
+                                    int position, long id) {
+
+                if(mSlect[position]==false){
+                    mSlect[position]=true;
+                }else {
+                    mSlect[position]=false;
+                }
+
+                Toast.makeText(MainActivity.this, "" + mSlect[position],
+                        Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
 
@@ -89,17 +129,17 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    class ImageAdapter extends BaseAdapter {
+    class ImageAdapter1 extends BaseAdapter {
 
         private Context mContext;
 
-        public ImageAdapter(Context context) {
+        public ImageAdapter1(Context context) {
             mContext = context;
         }
 
         @Override
         public int getCount() {
-            return mCursor.getCount();
+            return cc.getCount();
         }
 
         @Override
@@ -112,54 +152,74 @@ public class MainActivity extends AppCompatActivity {
             return 0;
         }
 
-        // Convert DP to PX
-        // Source: http://stackoverflow.com/a/8490361
-        public int dpToPx(int dps) {
-            final float scale = getResources().getDisplayMetrics().density;
-            int pixels = (int) (dps * scale + 0.5f);
 
-            return pixels;
-        }
 
         @Override
         public View getView (int position, View convertView, ViewGroup parent){
-            ImageView imageView;
-            int imageID = 0;
+           View v = convertView;
+            ViewHolder holder;
+            LayoutInflater vi = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            v = vi.inflate(R.layout.image_item,null);
+            try{
 
-            int wPixel = dpToPx(120);
-            int hPixel = dpToPx(120);
 
-            //move cursor to current position
-            mCursor.moveToPosition(position);
-            //Get the current value for the requested column
-            imageID = mCursor.getInt(columnIndex);
+                ImageView imageView = (ImageView) v.findViewById(R.id.ImageView01);
+                Bitmap bmp = decodeURI(mUrls[position].getPath());
+                //Bitmap bmp = MediaStore.Images.Media.getBitmap(getContentResolver(),mUrls[position]); //MediaStrore.Images.Media.getBitmap(c.getContentResolver() , Uri.parse(paths));
+                imageView.setImageBitmap(bmp);
 
-            if(convertView == null){
-                convertView = LayoutInflater.from(mContext).inflate(R.layout.image_item,null);
-            }else{
+
+            }catch (Exception e){
 
             }
+            return v;
 
-            imageView = (ImageView) convertView.findViewById(R.id.imageView);
 
-            imageView.setLayoutParams(new LinearLayout.LayoutParams(wPixel,hPixel));
 
-            //set the content of the image based on the provided URI
-            imageView.setImageURI(Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,"" + imageID));
 
-            //image should be cropped towards the center
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-            //set padding for images
-            imageView.setPadding(8,8,8,8);
 
-            //crop the image to fit within its padding
-            imageView.setCropToPadding(true);
-
-            return convertView;
         }
 
+    }
 
+    class ViewHolder{
+        ImageView imageView;
+        CheckBox checkBox;
+        int id;
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+    //    FlurryAgent.onStartSession(this,"***");
+    }
+
+    public Bitmap decodeURI  (String filePath){
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(filePath, options);
+
+        // Only scale if we need to
+        // (16384 buffer for img processing)
+        Boolean scaleByHeight = Math.abs(options.outHeight - 100) >= Math.abs(options.outWidth - 100);
+        if(options.outHeight * options.outWidth * 2 >= 16384){
+            // Load, scaling to smallest power of 2 that'll get it <= desired dimensions
+            double sampleSize = scaleByHeight
+                    ? options.outHeight / 200
+                    : options.outWidth / 200;
+            options.inSampleSize =
+                    (int)Math.pow(2d, Math.floor(
+                            Math.log(sampleSize)/Math.log(2d)));
+        }
+
+        // Do the actual decoding
+        options.inJustDecodeBounds = false;
+        options.inTempStorage = new byte[512];
+        Bitmap output = BitmapFactory.decodeFile(filePath, options);
+
+        return output;
     }
 
 
