@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.provider.Telephony;
@@ -21,6 +22,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.GridView;
@@ -30,6 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.nio.channels.ScatteringByteChannel;
+import java.security.PublicKey;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -37,9 +40,10 @@ public class MainActivity extends AppCompatActivity {
     private static Uri[] mUrls = null;
     private static String[] strUrls=null;
     private String[] mNames = null;
-    private Boolean[] mSlect = null;
+    private boolean[] mSlect = null;
     private GridView gridView = null;
     private Cursor cc = null;
+    private int max = 0;
 
     private ProgressDialog myProgressDialog = null;
 
@@ -66,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
                         mUrls = new Uri[cc.getCount()];
                         strUrls = new String[cc.getCount()];
                         mNames = new String[cc.getCount()];
-                        mSlect = new Boolean[cc.getCount()];
+                        mSlect = new boolean[cc.getCount()];
                         for (int i = 0; i < cc.getCount(); i++) {
                             cc.moveToPosition(i);
                             mUrls[i] = Uri.parse(cc.getString(1));
@@ -85,24 +89,55 @@ public class MainActivity extends AppCompatActivity {
             gridView = (GridView) findViewById(R.id.gridView);
             gridView.setAdapter(new ImageAdapter1(this));
 
+            gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                public void onItemClick(AdapterView<?> parent, View v,
+                                        int position, long id) {
+
+                    if(mSlect[position]){
+                        mSlect[position]=false;
+                        gridView.getChildAt(position).setBackgroundColor(Color.TRANSPARENT);
+                        max=max-1;
+
+                    }else{
+                        if(max <2) {
+                            mSlect[position] = true;
+                            gridView.getChildAt(position).setBackgroundColor(Color.BLUE);
+                            max++;
+                        }else {
+                            Toast.makeText(MainActivity.this,"Max picture picked = 2",Toast.LENGTH_LONG).show();
+                        }
+
+                    }
+                }
+            });
+
         }
 
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v,
-                                    int position, long id) {
+        Button btn = (Button)findViewById(R.id.btnNext);
 
-                if(mSlect[position]==false){
-                    mSlect[position]=true;
-                }else {
-                    mSlect[position]=false;
-                }
 
-                Toast.makeText(MainActivity.this, "" + mSlect[position],
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
 
     }
+
+    public void importImages (View view){
+        String[] String_uri = new String[cc.getCount()];
+
+        for(int i =0;i<cc.getCount();i++){
+            String_uri[i]=mUrls[i].toString();
+        }
+        Bundle b = new Bundle();
+        b.putStringArray("URI", String_uri);
+        b.putStringArray("URL", strUrls);
+        b.putStringArray("NAME", mNames);
+        b.putBooleanArray("SELECT", mSlect);
+        Intent intent = new Intent(this,CustomLayout_2.class);
+        intent.putExtras(b);
+        intent.putExtra("MAX",cc.getCount());
+        startActivity(intent);
+
+
+    }
+
 
 
 
@@ -157,7 +192,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public View getView (int position, View convertView, ViewGroup parent){
            View v = convertView;
-            ViewHolder holder;
             LayoutInflater vi = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             v = vi.inflate(R.layout.image_item,null);
             try{
@@ -169,25 +203,17 @@ public class MainActivity extends AppCompatActivity {
                 imageView.setImageBitmap(bmp);
 
 
+
             }catch (Exception e){
 
             }
             return v;
 
 
-
-
-
-
         }
 
     }
 
-    class ViewHolder{
-        ImageView imageView;
-        CheckBox checkBox;
-        int id;
-    }
 
     @Override
     protected void onStart(){

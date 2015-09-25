@@ -7,5 +7,6 @@
     <string name="pls_wait_txt">Pls wait</string>
     <string name="photogallery_txt">Multiple Images</string>
     <string name="moreinfo_txt">moreinfo_txt</string>
+    <string name="title_activity_custom_layout_2">CustomLayout_2</string>
 
 </resources>

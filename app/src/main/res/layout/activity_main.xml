@@ -25,6 +25,14 @@
                 android:textSize="40dp"
                 android:textIsSelectable="false" />
 
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right|center_vertical"
+                android:text="Next"
+                android:id="@+id/btnNext"
+                android:onClick="importImages"/>
+
         </FrameLayout>
 
         <GridView
@@ -34,13 +42,11 @@
             android:horizontalSpacing="10dp" android:stretchMode="columnWidth"
             android:gravity="center" android:layout_gravity="bottom"
             android:layout_marginTop="50dp"
-            android:listSelector="@drawable/list_selector"
+android:listSelector="@drawable/list_selector"
+
             ></GridView>
 
-
     </FrameLayout>
-
-
 
 
 </LinearLayout>
