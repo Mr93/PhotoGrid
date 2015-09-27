@@ -20,7 +20,7 @@
                 android:id="@+id/TextView01"
                 android:textStyle="bold" android:layout_gravity="center_vertical"
                 android:layout_marginLeft="30dp" android:gravity="center_vertical"
-                android:textColor="@color/grey"
+              
                 android:text="@string/photogallery_txt"
                 android:textSize="40dp"
                 android:textIsSelectable="false" />

@@ -120,20 +120,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void importImages (View view){
-        String[] String_uri = new String[cc.getCount()];
+        String[] Selected_Uris = new String[cc.getCount()];
 
         for(int i =0;i<cc.getCount();i++){
-            String_uri[i]=mUrls[i].toString();
+            if (mSlect[i]){
+                Selected_Uris[i]=mUrls[i].toString();
+            }
         }
         Bundle b = new Bundle();
-        b.putStringArray("URI", String_uri);
-        b.putStringArray("URL", strUrls);
-        b.putStringArray("NAME", mNames);
-        b.putBooleanArray("SELECT", mSlect);
+        b.putStringArray("URI", Selected_Uris);
+        //b.putStringArray("URL", strUrls);
+        //b.putStringArray("NAME", mNames);
+        //b.putBooleanArray("SELECT", mSlect);
         Intent intent = new Intent(this,CustomLayout_2.class);
         intent.putExtras(b);
         intent.putExtra("MAX",cc.getCount());
         startActivity(intent);
+
+
 
 
     }
